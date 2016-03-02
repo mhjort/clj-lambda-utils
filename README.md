@@ -19,7 +19,7 @@ Create S3 bucket and create following configuration into `project.clj`
 
 Then run
 
-    $ lein clj-lambda-deploy
+    $ lein clj-lambda-deploy update
 
 ## License
 

@@ -18,9 +18,11 @@
               object-key
               jar-file))
 
-(defn clj-lambda-deploy [project & args]
+(defn clj-lambda-deploy [project & [task]]
   (println project)
-  (let [jar-file (uberjar project)]
-    (store-jar-to-bucket (File. jar-file)
-                         (get-in project [:lambda :s3 :bucket])
-                         (get-in project [:lambda :s3 :key]))))
+  (if (= "update" task)
+    (let [jar-file (uberjar project)]
+      (store-jar-to-bucket (File. jar-file)
+                           (get-in project [:lambda :s3 :bucket])
+                           (get-in project [:lambda :s3 :key])))
+    (println "Currently only task 'update' is supported.")))
