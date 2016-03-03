@@ -1,6 +1,8 @@
 (ns leiningen.clj-lambda-deploy
   (:require [leiningen.uberjar :refer [uberjar]])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
+           [com.amazonaws.services.lambda.model UpdateFunctionCodeRequest]
+           [com.amazonaws.services.lambda AWSLambdaClient]
            [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
            [java.io File]))
@@ -9,7 +11,11 @@
   (.getCredentials (DefaultAWSCredentialsProviderChain.)))
 
 (defonce s3-client
-  (delay (AmazonS3Client. aws-credentials)))
+  (delay (AmazonS3Client. )))
+
+(defn- create-lambda-client [region]
+  (-> (AWSLambdaClient. aws-credentials)
+      (.withRegion (Regions/fromName region))))
 
 (defn- store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -18,11 +24,21 @@
               object-key
               jar-file))
 
-(defn clj-lambda-deploy [project & [task]]
-  (println project)
+(defn- update-lambda-fn [lambda-name bucket-name region object-key]
+  (println "Updating Lambda function" lambda-name "in region" region)
+  (let [client (create-lambda-client region)]
+    (.updateFunctionCode client (-> (UpdateFunctionCodeRequest.)
+                                    (.withFunctionName lambda-name)
+                                    (.withS3Bucket bucket-name)
+                                    (.withS3Key object-key)))))
+
+(defn clj-lambda-deploy [project & [task environment]]
   (if (= "update" task)
-    (let [jar-file (uberjar project)]
+    (let [{:keys [function-name region]} (get-in project [:lambda :environments environment])
+          {:keys [bucket object-key]} (get-in project [:lambda :s3])
+          jar-file (uberjar project)]
       (store-jar-to-bucket (File. jar-file)
-                           (get-in project [:lambda :s3 :bucket])
-                           (get-in project [:lambda :s3 :key])))
+                           bucket
+                           object-key)
+      (update-lambda-fn function-name bucket region object-key))
     (println "Currently only task 'update' is supported.")))
