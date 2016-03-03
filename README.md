@@ -6,14 +6,7 @@ A Leiningen plugin to deploy AWS Lambda function.
 
 Note! Currently only updating existing function is supported.
 
-Use this for user-level plugins:
-
-Put `[clj-lambda-deploy "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your `:user`
-profile.
-
-Use this for project-level plugins:
-
-Put `[clj-lambda-deploy "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your project.clj.
+Put `[clj-lambda-deploy "0.1.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
