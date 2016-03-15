@@ -6,7 +6,7 @@ A Leiningen plugin to deploy AWS Lambda function to one or multiple regions via 
 
 Note! Currently only updating existing function is supported.
 
-Put `[clj-lambda-deploy "0.1.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[clj-lambda-deploy "0.2.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
