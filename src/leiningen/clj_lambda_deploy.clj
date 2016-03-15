@@ -11,7 +11,7 @@
   (.getCredentials (DefaultAWSCredentialsProviderChain.)))
 
 (defonce s3-client
-  (delay (AmazonS3Client. )))
+  (delay (AmazonS3Client. aws-credentials)))
 
 (defn- create-lambda-client [region]
   (-> (AWSLambdaClient. aws-credentials)
