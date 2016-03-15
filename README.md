@@ -1,6 +1,6 @@
 # clj-lambda-deploy
 
-A Leiningen plugin to deploy AWS Lambda function.
+A Leiningen plugin to deploy AWS Lambda function to one or multiple regions via S3.
 
 ## Usage
 
@@ -10,12 +10,14 @@ Put `[clj-lambda-deploy "0.1.0"]` into the `:plugins` vector of your project.clj
 
 Create S3 bucket and create following configuration into `project.clj`
 
-    :lambda {:s3 {:bucket "your-bucket-name"
-                  :object-key "lambda.jar"}
-             :environments {"test" {:function-name "my-func-test"
-                                    :region "eu-west-1"}
-                            "production" {:function-name "my-func-prod"
-                                          :region "eu-west-1"}}}
+    :lambda {"test" [{:function-name "my-func-test"
+                      :region "eu-west-1"
+                      :s3 {:bucket "your-bucket"
+                           :object-key "lambda.jar"}}]
+             "production" [{:function-name "my-func-prod"
+                            :region "eu-west-1"
+                            :s3 {:bucket "your-bucket"
+                                :object-key "lambda.jar"}}]}
 
 Then run
 

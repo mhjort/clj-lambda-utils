@@ -34,11 +34,13 @@
 
 (defn clj-lambda-deploy [project & [task environment]]
   (if (= "update" task)
-    (let [{:keys [function-name region]} (get-in project [:lambda :environments environment])
-          {:keys [bucket object-key]} (get-in project [:lambda :s3])
+    (let [deployments (get-in project [:lambda environment])
           jar-file (uberjar project)]
-      (store-jar-to-bucket (File. jar-file)
-                           bucket
-                           object-key)
-      (update-lambda-fn function-name bucket region object-key))
+      (doseq [{:keys [region function-name s3]} deployments]
+        (let [{:keys [bucket object-key]} s3]
+          (println "Deploying to region" region)
+          (store-jar-to-bucket (File. jar-file)
+                               bucket
+                               object-key)
+          (update-lambda-fn function-name bucket region object-key))))
     (println "Currently only task 'update' is supported.")))
