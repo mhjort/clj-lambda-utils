@@ -1,4 +1,4 @@
-(defproject clj-lambda-deploy "0.1.0"
+(defproject clj-lambda-deploy "0.2.0"
   :description "Leiningen plugin for AWS Lambda deployment"
   :url "https://github.com/mhjort/clj-lambda-deploy"
   :license {:name "Eclipse Public License"
