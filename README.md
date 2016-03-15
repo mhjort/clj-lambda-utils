@@ -1,12 +1,12 @@
 # clj-lambda-deploy
 
-A Leiningen plugin to deploy AWS Lambda function to one or multiple regions via S3.
+A Leiningen plugin to deploy AWS Lambda (JVM) function to one or multiple regions via S3.
 
 ## Usage
 
 Note! Currently only updating existing function is supported.
 
-Put `[clj-lambda-deploy "0.2.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.2.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -21,11 +21,11 @@ Create S3 bucket and create following configuration into `project.clj`
 
 Then run
 
-    $ lein clj-lambda-deploy update test
+    $ lein lambda update test
 
 or
 
-    $ lein clj-lambda-deploy update production
+    $ lein lambda update production
 
 ## License
 

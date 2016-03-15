@@ -1,4 +1,4 @@
-(ns leiningen.clj-lambda-deploy
+(ns leiningen.lambda
   (:require [leiningen.uberjar :refer [uberjar]])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.lambda.model UpdateFunctionCodeRequest]
@@ -32,7 +32,7 @@
                                     (.withS3Bucket bucket-name)
                                     (.withS3Key object-key)))))
 
-(defn clj-lambda-deploy [project & [task environment]]
+(defn lambda [project & [task environment]]
   (if (= "update" task)
     (let [deployments (get-in project [:lambda environment])
           jar-file (uberjar project)]
