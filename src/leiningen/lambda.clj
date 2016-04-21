@@ -1,6 +1,15 @@
 (ns leiningen.lambda
-  (:require [leiningen.uberjar :refer [uberjar]])
+  (:require [leiningen.uberjar :refer [uberjar]]
+            [cheshire.core :refer [generate-string]])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
+           [com.amazonaws.services.identitymanagement AmazonIdentityManagementClient]
+           [com.amazonaws.services.identitymanagement.model AttachRolePolicyRequest
+                                                            CreatePolicyRequest
+                                                            CreateRoleRequest
+                                                            DeleteRoleRequest
+                                                            DeletePolicyRequest
+                                                            ListRolePoliciesRequest
+                                                            DetachRolePolicyRequest]
            [com.amazonaws.services.lambda.model UpdateFunctionCodeRequest]
            [com.amazonaws.services.lambda AWSLambdaClient]
            [com.amazonaws.services.s3 AmazonS3Client]
@@ -16,6 +25,37 @@
 (defn- create-lambda-client [region]
   (-> (AWSLambdaClient. aws-credentials)
       (.withRegion (Regions/fromName region))))
+
+(def role
+  {:Version "2012-10-17"
+   :Statement {:Effect "Allow"
+               :Principal {:Service "lambda.amazonaws.com"}
+               :Action "sts:AssumeRole"}})
+
+(defn policy [bucket-name]
+  {:Version "2012-10-17"
+   :Statement [{:Effect "Allow"
+                :Action ["s3:PutObject"]
+                :Resource (str "arn:aws:s3:::" bucket-name "/*")}
+               {:Effect "Allow"
+                :Action ["logs:CreateLogGroup"
+                         "logs:CreateLogStream"
+                         "logs:PutLogEvents"]
+                :Resource ["arn:aws:logs:*:*:*"]}]})
+
+(defn create-role-and-policy [role-name policy-name bucket-name]
+  (println "Creating role" role-name "with policy" policy-name)
+  (let [client (AmazonIdentityManagementClient. aws-credentials)
+        role (.createRole client (-> (CreateRoleRequest.)
+                                     (.withRoleName role-name)
+                                     (.withAssumeRolePolicyDocument (generate-string role))))]
+    (let [policy-result (.createPolicy client (-> (CreatePolicyRequest.)
+                                                  (.withPolicyName policy-name)
+                                                  (.withPolicyDocument (generate-string (policy bucket-name)))))]
+      (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
+                                    (.withPolicyArn (-> policy-result .getPolicy .getArn))
+                                    (.withRoleName role-name))))
+    (-> role .getRole .getArn)))
 
 (defn- store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -33,7 +73,8 @@
                                     (.withS3Key object-key)))))
 
 (defn lambda [project & [task environment]]
-  (if (= "update" task)
+  (condp = task
+    "update"
     (let [deployments (get-in project [:lambda environment])
           jar-file (uberjar project)]
       (doseq [{:keys [region function-name s3]} deployments]
@@ -43,4 +84,12 @@
                                bucket
                                object-key)
           (update-lambda-fn function-name bucket region object-key))))
+    "install"
+    (let [deployments (get-in project [:lambda environment])]
+      (doseq [{:keys [region function-name s3]} deployments]
+        (let [{:keys [bucket object-key]} s3]
+          (println "Installing to region" region)
+          (create-role-and-policy (str function-name "-role")
+                                  (str function-name "-policy")
+                                  bucket))))
     (println "Currently only task 'update' is supported.")))
