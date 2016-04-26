@@ -6,7 +6,7 @@ A Leiningen plugin to deploy AWS Lambda (JVM) function to one or multiple region
 
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda.
 
-Put `[lein-clj-lambda "0.2.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.3.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
