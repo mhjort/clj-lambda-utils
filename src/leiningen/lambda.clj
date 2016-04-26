@@ -43,6 +43,12 @@
                          "logs:PutLogEvents"]
                 :Resource ["arn:aws:logs:*:*:*"]}]})
 
+(defn- create-bucket [bucket-name region]
+  (println "Creating bucket" bucket-name "in region" region ".")
+  (if (= "us-east-1" region)
+    (.createBucket @s3-client bucket-name)
+    (.createBucket @s3-client bucket-name region)))
+
 (defn create-role-and-policy [role-name policy-name bucket-name]
   (println "Creating role" role-name "with policy" policy-name)
   (let [client (AmazonIdentityManagementClient. aws-credentials)
@@ -89,6 +95,7 @@
       (doseq [{:keys [region function-name s3]} deployments]
         (let [{:keys [bucket object-key]} s3]
           (println "Installing to region" region)
+          (create-bucket bucket region)
           (create-role-and-policy (str function-name "-role")
                                   (str function-name "-policy")
                                   bucket))))
