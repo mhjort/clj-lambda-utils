@@ -10,7 +10,9 @@
                                                             DeletePolicyRequest
                                                             ListRolePoliciesRequest
                                                             DetachRolePolicyRequest]
-           [com.amazonaws.services.lambda.model UpdateFunctionCodeRequest]
+           [com.amazonaws.services.lambda.model CreateFunctionRequest
+                                                UpdateFunctionCodeRequest
+                                                FunctionCode]
            [com.amazonaws.services.lambda AWSLambdaClient]
            [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
@@ -70,6 +72,21 @@
               object-key
               jar-file))
 
+(defn- create-lambda-fn [{:keys [function-name handler bucket-name object-key memory-size timeout region role-arn s3]}]
+  (println "Creating Lambda function" function-name "to region" region)
+  (let [client (create-lambda-client region)]
+    (.createFunction client (-> (CreateFunctionRequest.)
+                                (.withFunctionName function-name)
+                                (.withMemorySize (int memory-size))
+                                (.withTimeout (int timeout))
+                                (.withRuntime "java8")
+                                (.withHandler handler)
+                                (.withCode (-> (FunctionCode.)
+                                               (.withS3Bucket (:bucket s3))
+                                               (.withS3Key (:object-key s3))))
+                                (.withRole role-arn)))))
+
+
 (defn- update-lambda-fn [lambda-name bucket-name region object-key]
   (println "Updating Lambda function" lambda-name "in region" region)
   (let [client (create-lambda-client region)]
@@ -78,25 +95,35 @@
                                     (.withS3Bucket bucket-name)
                                     (.withS3Key object-key)))))
 
+(defn- update-lambda [project environment]
+  (let [deployments (get-in project [:lambda environment])
+        jar-file (uberjar project)]
+    (doseq [{:keys [region function-name s3]} deployments]
+      (let [{:keys [bucket object-key]} s3]
+        (println "Deploying to region" region)
+        (store-jar-to-bucket (File. jar-file)
+                             bucket
+                             object-key)
+        (update-lambda-fn function-name bucket region object-key)))))
+
+(defn- install-lambda [project environment]
+  (let [deployments (get-in project [:lambda environment])
+        jar-file (uberjar project)]
+    (doseq [{:keys [region function-name handler memory-size timeout s3] :as deployment} deployments]
+      (let [{:keys [bucket object-key]} s3
+            role-arn (create-role-and-policy (str function-name "-role")
+                                             (str function-name "-policy")
+                                             bucket)]
+
+        (println "Installing to region" region)
+        (create-bucket bucket region)
+        (store-jar-to-bucket (File. jar-file)
+                             bucket
+                             object-key)
+        (create-lambda-fn (assoc deployment :role-arn role-arn))))))
+
 (defn lambda [project & [task environment]]
   (condp = task
-    "update"
-    (let [deployments (get-in project [:lambda environment])
-          jar-file (uberjar project)]
-      (doseq [{:keys [region function-name s3]} deployments]
-        (let [{:keys [bucket object-key]} s3]
-          (println "Deploying to region" region)
-          (store-jar-to-bucket (File. jar-file)
-                               bucket
-                               object-key)
-          (update-lambda-fn function-name bucket region object-key))))
-    "install"
-    (let [deployments (get-in project [:lambda environment])]
-      (doseq [{:keys [region function-name s3]} deployments]
-        (let [{:keys [bucket object-key]} s3]
-          (println "Installing to region" region)
-          (create-bucket bucket region)
-          (create-role-and-policy (str function-name "-role")
-                                  (str function-name "-policy")
-                                  bucket))))
-    (println "Currently only task 'update' is supported.")))
+    "update" (update-lambda project environment)
+    "install" (install-lambda project environment)
+    (println "Currently only tasks 'update' and 'install' are supported.")))
