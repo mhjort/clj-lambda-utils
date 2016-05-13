@@ -8,6 +8,8 @@
                                                             CreateRoleRequest
                                                             DeleteRoleRequest
                                                             DeletePolicyRequest
+                                                            EntityAlreadyExistsException
+                                                            GetRoleRequest
                                                             ListRolePoliciesRequest
                                                             DetachRolePolicyRequest]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
@@ -45,25 +47,35 @@
                          "logs:PutLogEvents"]
                 :Resource ["arn:aws:logs:*:*:*"]}]})
 
-(defn- create-bucket [bucket-name region]
-  (println "Creating bucket" bucket-name "in region" region ".")
-  (if (= "us-east-1" region)
-    (.createBucket @s3-client bucket-name)
-    (.createBucket @s3-client bucket-name region)))
+(defn- create-bucket-if-needed [bucket-name region]
+  (if (.doesBucketExist @s3-client bucket-name)
+    (println bucket-name "already exists. Skipping creation.")
+    (do (println "Creating bucket" bucket-name "in region" region ".")
+        (if (= "us-east-1" region)
+          (.createBucket @s3-client bucket-name)
+          (.createBucket @s3-client bucket-name region)))))
 
 (defn create-role-and-policy [role-name policy-name bucket-name]
   (println "Creating role" role-name "with policy" policy-name)
-  (let [client (AmazonIdentityManagementClient. aws-credentials)
-        role (.createRole client (-> (CreateRoleRequest.)
-                                     (.withRoleName role-name)
-                                     (.withAssumeRolePolicyDocument (generate-string role))))]
-    (let [policy-result (.createPolicy client (-> (CreatePolicyRequest.)
-                                                  (.withPolicyName policy-name)
-                                                  (.withPolicyDocument (generate-string (policy bucket-name)))))]
-      (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
-                                    (.withPolicyArn (-> policy-result .getPolicy .getArn))
-                                    (.withRoleName role-name))))
-    (-> role .getRole .getArn)))
+  (let [client (AmazonIdentityManagementClient. aws-credentials)]
+    (try
+      (let [client (AmazonIdentityManagementClient. aws-credentials)
+            role (.createRole client (-> (CreateRoleRequest.)
+                                         (.withRoleName role-name)
+                                         (.withAssumeRolePolicyDocument (generate-string role))))
+            policy-result (.createPolicy client (-> (CreatePolicyRequest.)
+                                                    (.withPolicyName policy-name)
+                                                    (.withPolicyDocument (generate-string (policy bucket-name)))))]
+        (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
+                                      (.withPolicyArn (-> policy-result .getPolicy .getArn))
+                                      (.withRoleName role-name))))
+      (-> role .getRole .getArn)
+      (catch EntityAlreadyExistsException _
+        (println "Note! Role" role-name "already exists.")
+        (-> (.getRole client (-> (GetRoleRequest.)
+                                 (.withRoleName role-name)))
+            (.getRole)
+            (.getArn))))))
 
 (defn- store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -116,7 +128,7 @@
                                              bucket)]
 
         (println "Installing to region" region)
-        (create-bucket bucket region)
+        (create-bucket-if-needed bucket region)
         (store-jar-to-bucket (File. jar-file)
                              bucket
                              object-key)
