@@ -68,8 +68,8 @@
                                                     (.withPolicyDocument (generate-string (policy bucket-name)))))]
         (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
                                       (.withPolicyArn (-> policy-result .getPolicy .getArn))
-                                      (.withRoleName role-name))))
-      (-> role .getRole .getArn)
+                                      (.withRoleName role-name)))
+        (-> role .getRole .getArn))
       (catch EntityAlreadyExistsException _
         (println "Note! Role" role-name "already exists.")
         (-> (.getRole client (-> (GetRoleRequest.)
