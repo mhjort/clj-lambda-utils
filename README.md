@@ -15,6 +15,9 @@ Create S3 bucket and create following configuration into `project.clj`
                       :timeout 60
                       :function-name "my-func-test"
                       :region "eu-west-1"
+                      :policy-statements [{:Effect "Allow"
+                                         :Action ["sqs:*"]
+                                         :Resource ["arn:aws:sqs:eu-west-1:*"]}]
                       :s3 {:bucket "your-bucket"
                            :object-key "lambda.jar"}}]
              "production" [{:handler "lambda-demo.LambdaFn"
@@ -34,8 +37,11 @@ or
     $ lein lambda install production
 
 This will create S3 bucket that will be used for uploading code to Lambda.
-Also it creates new IAM role and policy so that the Lambda function can access
-S3 bucket and that Lambda can write to Cloudwatch logs.
+Also it creates new IAM role and policy so that the Lambda function can write to
+Cloudwatch logs. If you need to setup additional access rights you can pass
+`:policy-statements`. The format of statements are specified in Clojure map
+but they will be passed as json to AWS IAM (See here the details of policy
+statements http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement)
 If S3 bucket or role already exist their creation will be skipped.
 
 Note! IAM role and policy creation happen asynchronously. Sometimes they take too much

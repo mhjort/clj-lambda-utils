@@ -36,46 +36,43 @@
                :Principal {:Service "lambda.amazonaws.com"}
                :Action "sts:AssumeRole"}})
 
-(defn policy [bucket-name]
+(defn policy [additional-statements]
   {:Version "2012-10-17"
-   :Statement [{:Effect "Allow"
-                :Action ["s3:PutObject"]
-                :Resource (str "arn:aws:s3:::" bucket-name "/*")}
-               {:Effect "Allow"
-                :Action ["logs:CreateLogGroup"
-                         "logs:CreateLogStream"
-                         "logs:PutLogEvents"]
-                :Resource ["arn:aws:logs:*:*:*"]}]})
+   :Statement (concat [{:Effect "Allow"
+                        :Action ["logs:CreateLogGroup"
+                                 "logs:CreateLogStream"
+                                 "logs:PutLogEvents"]
+                        :Resource ["arn:aws:logs:*:*:*"]}]
+                      additional-statements)})
 
 (defn- create-bucket-if-needed [bucket-name region]
   (if (.doesBucketExist @s3-client bucket-name)
-    (println bucket-name "already exists. Skipping creation.")
+    (println bucket-name "S3 bucket already exists. Skipping creation.")
     (do (println "Creating bucket" bucket-name "in region" region ".")
         (if (= "us-east-1" region)
           (.createBucket @s3-client bucket-name)
           (.createBucket @s3-client bucket-name region)))))
 
-(defn create-role-and-policy [role-name policy-name bucket-name]
-  (println "Creating role" role-name "with policy" policy-name)
-  (let [client (AmazonIdentityManagementClient. aws-credentials)]
-    (try
-      (let [client (AmazonIdentityManagementClient. aws-credentials)
-            role (.createRole client (-> (CreateRoleRequest.)
-                                         (.withRoleName role-name)
-                                         (.withAssumeRolePolicyDocument (generate-string role))))
-            policy-result (.createPolicy client (-> (CreatePolicyRequest.)
-                                                    (.withPolicyName policy-name)
-                                                    (.withPolicyDocument (generate-string (policy bucket-name)))))]
-        (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
-                                      (.withPolicyArn (-> policy-result .getPolicy .getArn))
-                                      (.withRoleName role-name)))
-        (-> role .getRole .getArn))
-      (catch EntityAlreadyExistsException _
-        (println "Note! Role" role-name "already exists.")
-        (-> (.getRole client (-> (GetRoleRequest.)
-                                 (.withRoleName role-name)))
-            (.getRole)
-            (.getArn))))))
+(defn create-role-and-policy [role-name policy-name policy-statements]
+  (println "Creating role" role-name "with policy" policy-name "and statements" policy-statements)
+  (try
+    (let [client (AmazonIdentityManagementClient. aws-credentials)
+          role (.createRole client (-> (CreateRoleRequest.)
+                                       (.withRoleName role-name)
+                                       (.withAssumeRolePolicyDocument (generate-string role))))
+          policy-result (.createPolicy client (-> (CreatePolicyRequest.)
+                                                  (.withPolicyName policy-name)
+                                                  (.withPolicyDocument (generate-string (policy policy-statements)))))]
+      (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
+                                    (.withPolicyArn (-> policy-result .getPolicy .getArn))
+                                    (.withRoleName role-name)))
+      (-> role .getRole .getArn))
+    (catch EntityAlreadyExistsException _
+      (println "Note! Role" role-name "already exists.")
+      (-> (.getRole client (-> (GetRoleRequest.)
+                               (.withRoleName role-name)))
+          (.getRole)
+          (.getArn)))))
 
 (defn- store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -125,11 +122,11 @@
         jar-file (uberjar project)]
     (when (empty? deployments)
       (throw (ex-info "Could not find anything to install" {:environment environment})))
-    (doseq [{:keys [region function-name handler memory-size timeout s3] :as deployment} deployments]
+    (doseq [{:keys [region function-name handler memory-size timeout s3 policy-statements] :as deployment} deployments]
       (let [{:keys [bucket object-key]} s3
             role-arn (create-role-and-policy (str function-name "-role")
                                              (str function-name "-policy")
-                                             bucket)]
+                                             policy-statements)]
 
         (println "Installing to region" region)
         (create-bucket-if-needed bucket region)
