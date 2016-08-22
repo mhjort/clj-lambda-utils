@@ -110,6 +110,8 @@
 (defn- update-lambda [project environment]
   (let [deployments (get-in project [:lambda environment])
         jar-file (uberjar project)]
+    (when (empty? deployments)
+      (throw (ex-info "Could not find anything to update" {:environment environment})))
     (doseq [{:keys [region function-name s3]} deployments]
       (let [{:keys [bucket object-key]} s3]
         (println "Deploying to region" region)
@@ -121,6 +123,8 @@
 (defn- install-lambda [project environment]
   (let [deployments (get-in project [:lambda environment])
         jar-file (uberjar project)]
+    (when (empty? deployments)
+      (throw (ex-info "Could not find anything to install" {:environment environment})))
     (doseq [{:keys [region function-name handler memory-size timeout s3] :as deployment} deployments]
       (let [{:keys [bucket object-key]} s3
             role-arn (create-role-and-policy (str function-name "-role")
