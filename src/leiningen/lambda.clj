@@ -26,6 +26,9 @@
 (defonce s3-client
   (delay (AmazonS3Client. aws-credentials)))
 
+(defonce iam-client
+  (delay (AmazonIdentityManagementClient. aws-credentials)))
+
 (defn- create-lambda-client [region]
   (-> (AWSLambdaClient. aws-credentials)
       (.withRegion (Regions/fromName region))))
@@ -56,21 +59,20 @@
 (defn create-role-and-policy [role-name policy-name policy-statements]
   (println "Creating role" role-name "with policy" policy-name "and statements" policy-statements)
   (try
-    (let [client (AmazonIdentityManagementClient. aws-credentials)
-          role (.createRole client (-> (CreateRoleRequest.)
-                                       (.withRoleName role-name)
-                                       (.withAssumeRolePolicyDocument (generate-string role))))
-          policy-result (.createPolicy client (-> (CreatePolicyRequest.)
-                                                  (.withPolicyName policy-name)
-                                                  (.withPolicyDocument (generate-string (policy policy-statements)))))]
-      (.attachRolePolicy client (-> (AttachRolePolicyRequest.)
-                                    (.withPolicyArn (-> policy-result .getPolicy .getArn))
-                                    (.withRoleName role-name)))
+    (let [role (.createRole @iam-client (-> (CreateRoleRequest.)
+                                            (.withRoleName role-name)
+                                            (.withAssumeRolePolicyDocument (generate-string role))))
+          policy-result (.createPolicy @iam-client (-> (CreatePolicyRequest.)
+                                                       (.withPolicyName policy-name)
+                                                       (.withPolicyDocument (generate-string (policy policy-statements)))))]
+      (.attachRolePolicy @iam-client (-> (AttachRolePolicyRequest.)
+                                         (.withPolicyArn (-> policy-result .getPolicy .getArn))
+                                         (.withRoleName role-name)))
       (-> role .getRole .getArn))
     (catch EntityAlreadyExistsException _
       (println "Note! Role" role-name "already exists.")
-      (-> (.getRole client (-> (GetRoleRequest.)
-                               (.withRoleName role-name)))
+      (-> (.getRole @iam-client (-> (GetRoleRequest.)
+                                    (.withRoleName role-name)))
           (.getRole)
           (.getArn)))))
 
