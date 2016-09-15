@@ -104,3 +104,26 @@
                                     (.withFunctionName lambda-name)
                                     (.withS3Bucket bucket-name)
                                     (.withS3Key object-key)))))
+
+(defn update-lambda [deployments jar-file]
+  (doseq [{:keys [region function-name s3]} deployments]
+      (let [{:keys [bucket object-key]} s3]
+        (println "Deploying to region" region)
+        (store-jar-to-bucket (File. jar-file)
+                             bucket
+                             object-key)
+        (update-lambda-fn function-name bucket region object-key))))
+
+(defn install-lambda [deployments jar-file]
+  (doseq [{:keys [region function-name handler memory-size timeout s3 policy-statements] :as deployment} deployments]
+      (let [{:keys [bucket object-key]} s3
+            role-arn (create-role-and-policy (str function-name "-role")
+                                             (str function-name "-policy")
+                                             policy-statements)]
+
+        (println "Installing to region" region)
+        (create-bucket-if-needed bucket region)
+        (store-jar-to-bucket (File. jar-file)
+                             bucket
+                             object-key)
+        (create-lambda-fn (assoc deployment :role-arn role-arn)))))
