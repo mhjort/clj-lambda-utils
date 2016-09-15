@@ -1,6 +1,6 @@
 (ns leiningen.lambda
   (:require [leiningen.uberjar :refer [uberjar]]
-            [leiningen.aws :as aws])
+            [clj-lambda.aws :as aws])
   (:import [java.io File]))
 
 (defn- update-lambda [project environment]

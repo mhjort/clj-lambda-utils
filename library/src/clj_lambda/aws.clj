@@ -1,4 +1,4 @@
-(ns leiningen.aws
+(ns clj-lambda.aws
   (:require [cheshire.core :refer [generate-string]])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.identitymanagement AmazonIdentityManagementClient]

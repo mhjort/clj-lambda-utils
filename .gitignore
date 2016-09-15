@@ -1,4 +1,6 @@
 /target
+lein-plugin/target
+library/target
 /classes
 /checkouts
 pom.xml
