@@ -1,12 +1,16 @@
 # clj-lambda-deploy
 
-A Leiningen plugin to deploy AWS Lambda (JVM) function to one or multiple regions via S3.
+Clojure utilities to deploy AWS Lambda (JVM) function to one or multiple regions via S3.
 
 ## Usage
 
+Note! Now you can use utilities as a Leiningen plugin or just as a Clojure library.
+
+### Leiningen plugin
+
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda. When installing Lambda all created resource names are logged to console.
 
-Put `[lein-clj-lambda "0.5.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.6.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -57,6 +61,10 @@ After Lambda is installed you should not run install anymore but instead just ru
 or
 
     $ lein lambda update production
+
+### Library
+
+TODO
 
 ## License
 
