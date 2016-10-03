@@ -13,9 +13,8 @@
 (defn update-lambda-task [project environment]
    (lambdatask aws/update-lambda project environment))
 
-(defn insert-lambda-task [project environment]
-  (lambdatask aws/insert-lambda project environment))
-
+(defn install-lambda-task [project environment]
+  (lambdatask aws/install-lambda project environment))
 
 (defn lambda [project & [task environment]]
   (condp = task
