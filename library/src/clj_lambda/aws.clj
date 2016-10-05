@@ -20,6 +20,7 @@
            [com.amazonaws.services.apigateway AmazonApiGatewayClient]
            [com.amazonaws.services.apigateway.model CreateRestApiRequest
                                                     CreateResourceRequest
+                                                    CreateDeploymentRequest
                                                     GetResourcesRequest
                                                     PutIntegrationRequest
                                                     PutMethodRequest]
@@ -132,7 +133,7 @@
                                          (str "api-gateway-role-policy-" rest-api-id)
                                          "apigateway.amazonaws.com"
                                          (lambda-invoke-policy account-id region function-name))]
-    (Thread/sleep 500) ; Role creation is async
+    (Thread/sleep 1000) ; Role creation is async
     (println "Creating integration with role-arn" role-arn)
     (.putIntegration (create-api-gateway-client region) (-> (PutIntegrationRequest.)
                                                             (.withRestApiId rest-api-id)
@@ -154,6 +155,11 @@
                                                             (.withCacheNamespace "7wcnin")
                                                             (.withCredentials role-arn)))))
 
+(defn- create-deployment [rest-api-id stage-name region]
+  (.createDeployment (create-api-gateway-client "eu-west-1") (-> (CreateDeploymentRequest.)
+                                                                 (.withRestApiId rest-api-id)
+                                                                 (.withStageName stage-name)))
+                     (str "https://" rest-api-id ".execute-api." region ".amazonaws.com/" stage-name))
 
 (defn store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -167,7 +173,9 @@
   (let [rest-api-id (create-rest-api api-name region)
         resource-id (create-proxy-resource rest-api-id region)]
     (create-any-method rest-api-id resource-id region)
-    (create-integration rest-api-id resource-id region function-name)))
+    (create-integration rest-api-id resource-id region function-name)
+    (let [api-url (create-deployment rest-api-id "test" region)]
+      (println "Deployed to" api-url))))
 
 (defn create-lambda-fn [{:keys [function-name handler bucket-name object-key memory-size timeout region role-arn s3]}]
   (println "Creating Lambda function" function-name "to region" region)
