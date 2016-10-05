@@ -10,11 +10,12 @@ Note! Now you can use utilities as a Leiningen plugin or just as a Clojure libra
 
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda. When installing Lambda all created resource names are logged to console.
 
-Put `[lein-clj-lambda "0.6.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.7.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
-    :lambda {"test" [{:handler "lambda-demo.LambdaFn"
+    :lambda {"test" [{:api-gateway {:name "DemoApi"} ; Optional, if you want to access via API Gateway
+                      :handler "lambda-demo.LambdaFn"
                       :memory-size 512
                       :timeout 60
                       :function-name "my-func-test"
