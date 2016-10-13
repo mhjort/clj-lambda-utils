@@ -200,28 +200,35 @@
                                     (.withS3Bucket bucket-name)
                                     (.withS3Key object-key)))))
 
-(defn update-lambda [deployments jar-file]
-  (doseq [{:keys [region function-name s3]} deployments]
-      (let [{:keys [bucket object-key]} s3]
-        (println "Deploying to region" region)
-        (store-jar-to-bucket (File. jar-file)
-                             bucket
-                             object-key)
-        (update-lambda-fn function-name bucket region object-key))))
+(defn update-lambda
+  ([deployments jar-file] (update-lambda deployments []))
+  ([deployments jar-file _]
+   (doseq [{:keys [region function-name s3]} deployments]
+     (let [{:keys [bucket object-key]} s3]
+       (println "Deploying to region" region)
+       (store-jar-to-bucket (File. jar-file)
+                            bucket
+                            object-key)
+       (update-lambda-fn function-name bucket region object-key)))))
 
-(defn install-lambda [deployments jar-file]
-  (doseq [{:keys [api-gateway region function-name handler memory-size timeout s3 policy-statements] :as deployment} deployments]
-      (let [{:keys [bucket object-key]} s3
-            role-arn (create-role-and-policy (str function-name "-role")
-                                             (str function-name "-policy")
-                                             "lambda.amazonaws.com"
-                                             (log-policy-with-statements policy-statements))]
+(defn install-lambda
+  ([deployments jar-file] (install-lambda deployments jar-file []))
+  ([deployments jar-file [flag]]
+   (let [install-all? (not (= "--only-api-gateway" flag))]
+     (doseq [{:keys [api-gateway region function-name handler memory-size timeout s3 policy-statements] :as deployment} deployments]
+       (println "Installing to region" region "with deployment" deployment)
+       (when api-gateway
+         (setup-api-gateway (:name api-gateway) region function-name))
+       (if install-all?
+         (let [{:keys [bucket object-key]} s3
+               role-arn (create-role-and-policy (str function-name "-role")
+                                                (str function-name "-policy")
+                                                "lambda.amazonaws.com"
+                                                (log-policy-with-statements policy-statements))]
 
-        (println "Installing to region" region "with deployment" deployment)
-        (create-bucket-if-needed bucket region)
-        (store-jar-to-bucket (File. jar-file)
-                             bucket
-                             object-key)
-        (create-lambda-fn (assoc deployment :role-arn role-arn))
-        (when api-gateway
-          (setup-api-gateway (:name api-gateway) region function-name)))))
+           (create-bucket-if-needed bucket region)
+           (store-jar-to-bucket (File. jar-file)
+                                bucket
+                                object-key)
+           (create-lambda-fn (assoc deployment :role-arn role-arn)))
+         (println "Skipping Lambda installation"))))))
