@@ -54,6 +54,10 @@ time to create and they are not ready when Lambda function is installing. In tho
 you will get error `The role defined for the function cannot be assumed by Lambda.` Just retrying
 the install command should fix the issue.
 
+If Lambda function already exists and you want to just configure API gateway for that you can run:
+
+    $ lein lambda install test --only-api-gateway
+
 After Lambda is installed you should not run install anymore but instead just run
 `update` task that will only update latest code to Lambda environment.
 
