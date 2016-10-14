@@ -191,7 +191,6 @@
                                                (.withS3Key (:object-key s3))))
                                 (.withRole role-arn)))))
 
-
 (defn update-lambda-fn [lambda-name bucket-name region object-key]
   (println "Updating Lambda function" lambda-name "in region" region)
   (let [client (create-lambda-client region)]
