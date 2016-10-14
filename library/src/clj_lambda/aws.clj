@@ -156,10 +156,10 @@
                                                             (.withCredentials role-arn)))))
 
 (defn- create-deployment [rest-api-id stage-name region]
-  (.createDeployment (create-api-gateway-client "eu-west-1") (-> (CreateDeploymentRequest.)
-                                                                 (.withRestApiId rest-api-id)
-                                                                 (.withStageName stage-name)))
-                     (str "https://" rest-api-id ".execute-api." region ".amazonaws.com/" stage-name))
+  (.createDeployment (create-api-gateway-client region) (-> (CreateDeploymentRequest.)
+                                                            (.withRestApiId rest-api-id)
+                                                            (.withStageName stage-name)))
+  (str "https://" rest-api-id ".execute-api." region ".amazonaws.com/" stage-name))
 
 (defn store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
