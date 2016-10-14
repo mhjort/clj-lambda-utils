@@ -118,11 +118,11 @@
                                                               (.withPathPart "{proxy+}")))
       (.getId)))
 
-(defn- create-any-method [rest-api-id proxy-resource-id region]
+(defn- create-method [rest-api-id proxy-resource-id http-method region]
   (.putMethod (create-api-gateway-client region) (-> (PutMethodRequest.)
                                                      (.withRestApiId rest-api-id)
                                                      (.withResourceId proxy-resource-id)
-                                                     (.withHttpMethod "ANY")
+                                                     (.withHttpMethod http-method)
                                                      (.withApiKeyRequired false)
                                                      (.withAuthorizationType "NONE")
                                                      (.withRequestParameters {"method.request.path.proxy" true}))))
@@ -172,7 +172,7 @@
   (println "Setting up API Gateway with api name" api-name)
   (let [rest-api-id (create-rest-api api-name region)
         resource-id (create-proxy-resource rest-api-id region)]
-    (create-any-method rest-api-id resource-id region)
+    (create-method rest-api-id resource-id "ANY" region)
     (create-integration rest-api-id resource-id region function-name)
     (let [api-url (create-deployment rest-api-id "test" region)]
       (println "Deployed to" api-url))))

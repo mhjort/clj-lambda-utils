@@ -8,7 +8,7 @@
          jar-file (uberjar project)]
      (when (empty? deployments)
        (throw (ex-info "Could not find anything to install or deploy" {:environment environment})))
-     (f deployments jar-file flags)))
+     (f environment deployments jar-file flags)))
 
 (defn update-lambda-task [project environment flags]
    (lambdatask aws/update-lambda project environment flags))
