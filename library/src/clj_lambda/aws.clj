@@ -1,17 +1,6 @@
 (ns clj-lambda.aws
-  (:require [cheshire.core :refer [generate-string]]
-            [clojure.string :as string])
+  (:require [clj-lambda.iam :as iam])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
-           [com.amazonaws.services.identitymanagement AmazonIdentityManagementClient]
-           [com.amazonaws.services.identitymanagement.model AttachRolePolicyRequest
-                                                            CreatePolicyRequest
-                                                            CreateRoleRequest
-                                                            DeleteRoleRequest
-                                                            DeletePolicyRequest
-                                                            EntityAlreadyExistsException
-                                                            GetRoleRequest
-                                                            ListRolePoliciesRequest
-                                                            DetachRolePolicyRequest]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
                                                 UpdateFunctionCodeRequest
                                                 FunctionCode]
@@ -37,38 +26,10 @@
   (-> (AmazonApiGatewayClient. aws-credentials)
       (.withRegion (Regions/fromName region))))
 
-(defonce iam-client
-  (delay (AmazonIdentityManagementClient. aws-credentials)))
-
 (defn- create-lambda-client [region]
   (-> (AWSLambdaClient. aws-credentials)
       (.withRegion (Regions/fromName region))))
 
-(defn- trust-policy [service]
-  {:Version "2012-10-17"
-   :Statement {:Effect "Allow"
-               :Principal {:Service service}
-               :Action "sts:AssumeRole"}})
-
-(defn log-policy-with-statements [additional-statements]
-  {:Version "2012-10-17"
-   :Statement (concat [{:Effect "Allow"
-                        :Action ["logs:CreateLogGroup"
-                                 "logs:CreateLogStream"
-                                 "logs:PutLogEvents"]
-                        :Resource ["arn:aws:logs:*:*:*"]}]
-                      additional-statements)})
-
-(defn lambda-invoke-policy [account-id region function-name]
-  {:Version "2012-10-17"
-   :Statement [{:Effect "Allow"
-                :Action ["lambda:InvokeFunction"]
-                :Resource [(str "arn:aws:lambda:"
-                               region
-                               ":"
-                               account-id
-                               ":function:"
-                               function-name)]}]})
 
 (defn create-bucket-if-needed [bucket-name region]
   (if (.doesBucketExist @s3-client bucket-name)
@@ -77,26 +38,6 @@
         (if (= "us-east-1" region)
           (.createBucket @s3-client bucket-name)
           (.createBucket @s3-client bucket-name region)))))
-
-(defn create-role-and-policy [role-name policy-name trust-policy-service policy]
-  (println "Creating role" role-name "with policy" policy-name "and statements" policy)
-  (try
-    (let [role (.createRole @iam-client (-> (CreateRoleRequest.)
-                                            (.withRoleName role-name)
-                                            (.withAssumeRolePolicyDocument (generate-string (trust-policy trust-policy-service)))))
-          policy-result (.createPolicy @iam-client (-> (CreatePolicyRequest.)
-                                                       (.withPolicyName policy-name)
-                                                       (.withPolicyDocument (generate-string policy))))]
-      (.attachRolePolicy @iam-client (-> (AttachRolePolicyRequest.)
-                                         (.withPolicyArn (-> policy-result .getPolicy .getArn))
-                                         (.withRoleName role-name)))
-      (-> role .getRole .getArn))
-    (catch EntityAlreadyExistsException _
-      (println "Note! Role" role-name "already exists.")
-      (-> (.getRole @iam-client (-> (GetRoleRequest.)
-                                    (.withRoleName role-name)))
-          (.getRole)
-          (.getArn)))))
 
 (defn- create-rest-api [api-name region]
   (-> (.createRestApi (create-api-gateway-client region) (-> (CreateRestApiRequest.)
@@ -127,16 +68,10 @@
                                                      (.withAuthorizationType "NONE")
                                                      (.withRequestParameters {"method.request.path.proxy" true}))))
 
-(defn- get-account-id []
-  (-> (.getUser @iam-client)
-      (.getUser)
-      (.getArn)
-      (string/split #":")
-      (nth 4)))
 
 (defn- create-integration [rest-api-id resource-id region function-name]
-  (let [account-id (get-account-id)
-        role-arn (create-role-and-policy (str "api-gateway-role-" rest-api-id)
+  (let [account-id (iam/get-account-id)
+        role-arn (iam/create-role-and-policy (str "api-gateway-role-" rest-api-id)
                                          (str "api-gateway-role-policy-" rest-api-id)
                                          "apigateway.amazonaws.com"
                                          (lambda-invoke-policy account-id region function-name))]
@@ -227,7 +162,7 @@
          (setup-api-gateway environment (:name api-gateway) region function-name))
        (if install-all?
          (let [{:keys [bucket object-key]} s3
-               role-arn (create-role-and-policy (str function-name "-role")
+               role-arn (iam/create-role-and-policy (str function-name "-role")
                                                 (str function-name "-policy")
                                                 "lambda.amazonaws.com"
                                                 (log-policy-with-statements policy-statements))]
