@@ -127,8 +127,15 @@
                                                      (.withAuthorizationType "NONE")
                                                      (.withRequestParameters {"method.request.path.proxy" true}))))
 
+(defn- get-account-id []
+  (-> (.getUser @iam-client)
+      (.getUser)
+      (.getArn)
+      (string/split #":")
+      (nth 4)))
+
 (defn- create-integration [rest-api-id resource-id region function-name]
-  (let [account-id (-> (.getUser @iam-client) (.getUser) (.getArn) (string/split #":") (nth 4))
+  (let [account-id (get-account-id)
         role-arn (create-role-and-policy (str "api-gateway-role-" rest-api-id)
                                          (str "api-gateway-role-policy-" rest-api-id)
                                          "apigateway.amazonaws.com"
