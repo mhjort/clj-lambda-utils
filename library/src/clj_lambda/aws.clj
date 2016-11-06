@@ -74,7 +74,7 @@
         role-arn (iam/create-role-and-policy (str "api-gateway-role-" rest-api-id)
                                          (str "api-gateway-role-policy-" rest-api-id)
                                          "apigateway.amazonaws.com"
-                                         (lambda-invoke-policy account-id region function-name))]
+                                         (iam/lambda-invoke-policy account-id region function-name))]
     (Thread/sleep 1000) ; Role creation is async
     (println "Creating integration with role-arn" role-arn)
     (.putIntegration (create-api-gateway-client region) (-> (PutIntegrationRequest.)
@@ -165,7 +165,7 @@
                role-arn (iam/create-role-and-policy (str function-name "-role")
                                                 (str function-name "-policy")
                                                 "lambda.amazonaws.com"
-                                                (log-policy-with-statements policy-statements))]
+                                                (iam/log-policy-with-statements policy-statements))]
 
            (create-bucket-if-needed bucket region)
            (store-jar-to-bucket (File. jar-file)
