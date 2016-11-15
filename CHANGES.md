@@ -1,5 +1,9 @@
 # Changes
 
+## 0.8.2
+
+* Use default values for S3 if not configured
+
 ## 0.8.1
 
 * Bug fix. Remove hard coded region from API Gateway installation.
