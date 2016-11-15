@@ -14,24 +14,26 @@ Put `[lein-clj-lambda "0.8.1"]` into the `:plugins` vector of your project.clj (
 
 Create S3 bucket and create following configuration into `project.clj`
 
-    :lambda {"test" [{:api-gateway {:name "DemoApi"} ; Optional, if you want to access via API Gateway
-                      :handler "lambda-demo.LambdaFn"
-                      :memory-size 512
-                      :timeout 60
-                      :function-name "my-func-test"
-                      :region "eu-west-1"
-                      :policy-statements [{:Effect "Allow"
-                                         :Action ["sqs:*"]
-                                         :Resource ["arn:aws:sqs:eu-west-1:*"]}]
-                      :s3 {:bucket "your-bucket"
-                           :object-key "lambda.jar"}}]
-             "production" [{:handler "lambda-demo.LambdaFn"
-                            :memory-size 1024
-                            :timeout 300
-                            :function-name "my-func-prod"
-                            :region "eu-west-1"
-                            :s3 {:bucket "your-bucket"
-                                :object-key "lambda.jar"}}]}
+```clojure
+:lambda {"test" [{:api-gateway {:name "DemoApi"} ; Optional, if you want to access via API Gateway
+                  :handler "lambda-demo.LambdaFn"
+                  :memory-size 512
+                  :timeout 60
+                  :function-name "my-func-test"
+                  :region "eu-west-1"
+                  :policy-statements [{:Effect "Allow"
+                                       :Action ["sqs:*"]
+                                       :Resource ["arn:aws:sqs:eu-west-1:*"]}]
+                  :s3 {:bucket "your-bucket"  : Optional, if not specified default bucket will be generated
+                       :object-key "lambda.jar"}}]
+          "production" [{:handler "lambda-demo.LambdaFn"
+                         :memory-size 1024
+                         :timeout 300
+                         :function-name "my-func-prod"
+                         :region "eu-west-1"
+                         :s3 {:bucket "your-bucket"
+                              :object-key "lambda.jar"}}]}
+```
 
 Then run
 
