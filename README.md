@@ -2,9 +2,11 @@
 
 Clojure utilities for deploying AWS Lambda (JVM) function(s) to one or multiple regions via S3.
 
+Note! The name of the repo used to be ```lein-clj-lambda``` when it contained only the Leingingen plugin.
+
 ## Usage
 
-Note! Now you can use utilities as a Leiningen plugin or just as a Clojure library. Boot support is coming up later!
+You can use utilities as a Leiningen plugin or just as a Clojure library. Boot support is coming up later!
 
 ### Leiningen plugin
 
