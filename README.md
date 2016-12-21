@@ -1,10 +1,10 @@
-# clj-lambda-deploy
+# clj-lambda-utilities
 
-Clojure utilities to deploy AWS Lambda (JVM) function to one or multiple regions via S3.
+Clojure utilities for deploying AWS Lambda (JVM) function(s) to one or multiple regions via S3.
 
 ## Usage
 
-Note! Now you can use utilities as a Leiningen plugin or just as a Clojure library.
+Note! Now you can use utilities as a Leiningen plugin or just as a Clojure library. Boot support is coming up later!
 
 ### Leiningen plugin
 
