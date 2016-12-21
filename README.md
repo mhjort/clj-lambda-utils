@@ -1,4 +1,4 @@
-# clj-lambda-utilities
+# clj-lambda-utils
 
 Clojure utilities for deploying AWS Lambda (JVM) function(s) to one or multiple regions via S3.
 
