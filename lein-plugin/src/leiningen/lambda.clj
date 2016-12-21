@@ -1,7 +1,7 @@
 (ns leiningen.lambda
   (:require [leiningen.uberjar :refer [uberjar]]
-            [clj-lambda.aws :as aws])
-  (:import [java.io File]))
+            [clojure.tools.cli :refer [parse-opts]]
+            [clj-lambda.aws :as aws]))
 
 (defn lambdatask [f project environment flags]
    (let [deployments (get-in project [:lambda environment])
@@ -16,8 +16,12 @@
 (defn install-lambda-task [project environment flags]
   (lambdatask aws/install-lambda project environment flags))
 
-(defn lambda [project & [task environment flag]]
-  (condp = task
-    "update" (update-lambda-task project environment [flag])
-    "install" (install-lambda-task project environment [flag])
-    (println "Currently only tasks 'update' and 'install' are supported.")))
+(def flags
+  [["-o" "--only-api-gateway" "Apply only API Gateway changes"]])
+
+(defn lambda [project task environment & args]
+  (let [opts (:options (parse-opts args flags))]
+    (condp = task
+      "update" (update-lambda-task project environment opts)
+      "install" (install-lambda-task project environment opts)
+      (println "Currently only tasks 'update' and 'install' are supported."))))
