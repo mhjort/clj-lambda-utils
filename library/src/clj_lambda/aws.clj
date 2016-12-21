@@ -4,7 +4,8 @@
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
                                                 UpdateFunctionCodeRequest
-                                                FunctionCode]
+                                                FunctionCode
+                                                Environment]
            [com.amazonaws.services.lambda AWSLambdaClient]
            [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
@@ -35,9 +36,12 @@
               object-key
               jar-file))
 
-(defn create-lambda-fn [{:keys [function-name handler bucket object-key memory-size timeout region role-arn]}]
+(defn create-lambda-fn [{:keys [function-name handler bucket
+                                object-key environment memory-size
+                                timeout region role-arn]}]
   (println "Creating Lambda function" function-name "to region" region)
-  (let [client (create-lambda-client region)]
+  (let [client (create-lambda-client region)
+        env-vars (.withVariables (Environment.) environment)]
     (.createFunction client (-> (CreateFunctionRequest.)
                                 (.withFunctionName function-name)
                                 (.withMemorySize (int memory-size))
@@ -47,6 +51,7 @@
                                 (.withCode (-> (FunctionCode.)
                                                (.withS3Bucket bucket)
                                                (.withS3Key object-key)))
+                                (.withEnvironment env-vars)
                                 (.withRole role-arn)))))
 
 (defn update-lambda-fn [lambda-name bucket-name region object-key]
@@ -80,7 +85,8 @@
   ([environment deployments jar-file] (install-lambda deployments jar-file []))
   ([environment deployments jar-file [flag]]
    (let [install-all? (not (= "--only-api-gateway" flag))]
-     (doseq [{:keys [api-gateway region function-name handler memory-size timeout s3 policy-statements] :as deployment} deployments]
+     (doseq [{:keys [api-gateway region function-name environment
+                     handler memory-size timeout s3 policy-statements] :as deployment} deployments]
        (println "Installing with settings" deployment)
        (when api-gateway
          (ag/setup-api-gateway environment (:name api-gateway) region function-name))
@@ -96,6 +102,7 @@
                                 bucket
                                 object-key)
            (create-lambda-fn (-> deployment
-                                 (select-keys [:function-name :handler :timeout :memory-size :region])
+                                 (select-keys [:function-name :handler :timeout
+                                               :environment :memory-size :region])
                                  (assoc :role-arn role-arn :bucket bucket :object-key object-key))))
          (println "Skipping Lambda installation"))))))
