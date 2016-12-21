@@ -4,11 +4,11 @@
             [clj-lambda.aws :as aws]))
 
 (defn lambdatask [f project environment flags]
-   (let [deployments (get-in project [:lambda environment])
+   (let [config (get-in project [:lambda environment])
          jar-file (uberjar project)]
-     (when (empty? deployments)
+     (when (empty? config)
        (throw (ex-info "Could not find anything to install or deploy" {:environment environment})))
-     (f environment deployments jar-file flags)))
+     (f environment config jar-file flags)))
 
 (defn update-lambda-task [project environment flags]
    (lambdatask aws/update-lambda project environment flags))
