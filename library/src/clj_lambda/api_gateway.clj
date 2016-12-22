@@ -81,11 +81,11 @@
                                                             (.withStageName stage-name)))
   (str "https://" rest-api-id ".execute-api." region ".amazonaws.com/" stage-name))
 
-(defn setup-api-gateway [environment api-name region function-name]
+(defn setup-api-gateway [stage-name api-name region function-name]
   (println "Setting up API Gateway with api name" api-name)
   (let [rest-api-id (create-rest-api api-name region)
         resource-id (create-proxy-resource rest-api-id region)]
     (create-method rest-api-id resource-id "ANY" region)
     (create-integration rest-api-id resource-id region function-name)
-    (let [api-url (create-deployment rest-api-id environment region)]
+    (let [api-url (create-deployment rest-api-id stage-name region)]
       (println "Deployed to" api-url))))

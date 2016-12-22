@@ -70,8 +70,8 @@
       (println "No S3 settings defined, using defaults" default-s3-config)
       default-s3-config)))
 
-(defn update-lambda [environment config jar-file & [opts]]
-  (println "Updating env" environment "with options" opts)
+(defn update-lambda [stage-name config jar-file & [opts]]
+  (println "Updating env" stage-name "with options" opts)
   (doseq [{:keys [region function-name s3]} config]
     (let [{:keys [bucket object-key]} (deployment-s3-config s3 function-name)]
       (println "Deploying to region" region)
@@ -80,14 +80,14 @@
                            object-key)
       (update-lambda-fn function-name bucket region object-key))))
 
-(defn install-lambda [environment config jar-file & [opts]]
-  (println "Installing env" environment "with options" opts)
+(defn install-lambda [stage-name config jar-file & [opts]]
+  (println "Installing env" stage-name "with options" opts)
   (let [install-all? (not (:only-api-gateway opts))]
     (doseq [{:keys [api-gateway region function-name environment
                     handler memory-size timeout s3 policy-statements] :as env-settings} config]
       (println "Installing with settings" env-settings)
       (when api-gateway
-        (ag/setup-api-gateway environment (:name api-gateway) region function-name))
+        (ag/setup-api-gateway stage-name (:name api-gateway) region function-name))
       (if install-all?
         (let [{:keys [bucket object-key]} (deployment-s3-config s3 function-name)
               role-arn (iam/create-role-and-policy (str function-name "-role")
