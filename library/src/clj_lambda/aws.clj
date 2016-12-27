@@ -1,7 +1,9 @@
 (ns clj-lambda.aws
   (:require [clj-lambda.iam :as iam]
             [clj-lambda.api-gateway :as ag]
-            [clj-lambda.schema :refer [OptionsSchema]]
+            [clj-lambda.schema :refer [OptionsSchema
+                                       ConfigSchemaForUpdate
+                                       ConfigSchemaForInstall]]
             [schema.core :as s])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
@@ -72,11 +74,12 @@
       (println "No S3 settings defined, using defaults" default-s3-config)
       default-s3-config)))
 
-(defn- validate-input [opts]
+(defn- validate-input [config-schema config opts]
+  (s/validate config-schema config)
   (s/validate OptionsSchema opts))
 
 (defn update-lambda [stage-name config jar-file & [opts]]
-  (validate-input (or opts {}))
+  (validate-input ConfigSchemaForUpdate config (or opts {}))
   (println "Updating env" stage-name "with options" opts)
   (let [[{:keys [region function-name s3]}] config
         {:keys [bucket object-key]} (deployment-s3-config s3 function-name)]
@@ -87,7 +90,7 @@
     (update-lambda-fn function-name bucket region object-key)))
 
 (defn install-lambda [stage-name config jar-file & [opts]]
-  (validate-input (or opts {}))
+  (validate-input ConfigSchemaForInstall config (or opts {}))
   (println "Installing env" stage-name "with options" opts)
   (let [[{:keys [api-gateway region function-name environment
                  handler memory-size timeout s3 policy-statements] :as env-settings}] config
