@@ -22,13 +22,13 @@ Create S3 bucket and create following configuration into `project.clj`
                   :memory-size 512
                   :timeout 60
                   :function-name "my-func-test"
-                  :environment {"MY_ENVIRONMENT_VAR" "some value"
+                  :environment {"MY_ENVIRONMENT_VAR" "some value" ;Optional
                                 "SOME_OTHER_ENV_VAR" "another val"}
                   :region "eu-west-1"
                   :policy-statements [{:Effect "Allow"
                                        :Action ["sqs:*"]
                                        :Resource ["arn:aws:sqs:eu-west-1:*"]}]
-                  :s3 {:bucket "your-bucket"  : Optional, if not specified default bucket will be generated
+                  :s3 {:bucket "your-bucket"  ; Optional, if not specified default bucket will be generated
                        :object-key "lambda.jar"}}]
           "production" [{:handler "lambda-demo.LambdaFn"
                          :memory-size 1024
