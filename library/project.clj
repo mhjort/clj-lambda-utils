@@ -7,6 +7,7 @@
   :dependencies [[cheshire "5.5.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.5.3"]
                  [com.fasterxml.jackson.core/jackson-databind "2.5.3"]
+                 [prismatic/schema "1.1.3"]
                  [com.amazonaws/aws-java-sdk-core ~aws-java-sdk-version :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.amazonaws/aws-java-sdk-lambda ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-iam ~aws-java-sdk-version]
