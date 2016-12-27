@@ -1,5 +1,5 @@
 (def aws-java-sdk-version "1.11.69")
-(defproject clj-lambda "0.4.0"
+(defproject clj-lambda "0.5.0"
   :description "Clojure utilities for AWS Lambda deployment"
   :url "https://github.com/mhjort/lein-clj-lambda/library"
   :license {:name "Eclipse Public License"
