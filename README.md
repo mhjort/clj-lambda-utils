@@ -12,7 +12,7 @@ You can use utilities as a Leiningen plugin or just as a Clojure library. Boot s
 
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda. When installing Lambda all created resource names are logged to console.
 
-Put `[lein-clj-lambda "0.8.2"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.9.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
