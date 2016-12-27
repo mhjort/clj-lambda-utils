@@ -77,7 +77,23 @@ or
 
 ### Library
 
-TODO
+Add the following to your `project.clj` `:dependencies`:
+
+```clojure
+[clj-lambda "0.4.0"
+```
+
+Then run
+
+```clojure
+(require '[clj-lambda.aws :as aws])
+
+(aws/update-lambda stage-name config jar-file opts)
+
+(aws/install-lambda stage-name config jar-file opts)
+```
+
+Config is a vector of configurations. See example from Leiningen plugin documentation above.
 
 ## License
 
