@@ -22,6 +22,8 @@ Create S3 bucket and create following configuration into `project.clj`
                   :memory-size 512
                   :timeout 60
                   :function-name "my-func-test"
+                  :environment {"MY_ENVIRONMENT_VAR" "some value"
+                                "SOME_OTHER_ENV_VAR" "another val"}
                   :region "eu-west-1"
                   :policy-statements [{:Effect "Allow"
                                        :Action ["sqs:*"]
@@ -32,6 +34,8 @@ Create S3 bucket and create following configuration into `project.clj`
                          :memory-size 1024
                          :timeout 300
                          :function-name "my-func-prod"
+                         :environment {"MY_ENVIRONMENT_VAR" "some value"
+                                       "SOME_OTHER_ENV_VAR" "another val"}
                          :region "eu-west-1"
                          :s3 {:bucket "your-bucket"
                               :object-key "lambda.jar"}}]}
