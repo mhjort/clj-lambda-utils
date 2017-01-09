@@ -12,7 +12,7 @@ You can use utilities as a Leiningen plugin or just as a Clojure library. Boot s
 
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda. When installing Lambda all created resource names are logged to console.
 
-Put `[lein-clj-lambda "0.9.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.9.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -49,25 +49,25 @@ or
 
     $ lein lambda install production
 
-This will create S3 bucket that will be used for uploading code to Lambda.
-Also it creates new IAM role and policy so that the Lambda function can write to
-Cloudwatch logs. If you need to setup additional access rights you can pass
-`:policy-statements`. The format of statements are specified in Clojure map
-but they will be passed as json to AWS IAM (See here the details of policy
+This will create S3 buckets that will be used for uploading code to Lambda.
+Also, this creates new IAM roles and policies so the Lambda function can write to
+Cloudwatch logs. If you need to set up additional access rights, you can pass
+`:policy-statements`. The format of statements are specified in a Clojure EDN map
+but they will be passed as JSON to AWS IAM (See here the details of policy
 statements http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement)
-If S3 bucket or role already exist their creation will be skipped.
+If an S3 bucket or role already exists, its creation will be skipped.
 
-Note! IAM role and policy creation happen asynchronously. Sometimes they take too much
-time to create and they are not ready when Lambda function is installing. In those cases
-you will get error `The role defined for the function cannot be assumed by Lambda.` Just retrying
-the install command should fix the issue.
+Note that IAM role and policy creation happen asynchronously. Sometimes they take too much
+time to create and they are not ready when a Lambda function is installing. In those cases
+you will get an error like `The role defined for the function cannot be assumed by Lambda.`
+Just retrying the install command should fix this issue.
 
-If Lambda function already exists and you want to just configure API gateway for that you can run:
+If the Lambda function already exists and you want to just configure API gateway for that you can run:
 
     $ lein lambda install test --only-api-gateway
 
-After Lambda is installed you should not run install anymore but instead just run
-`update` task that will only update latest code to Lambda environment.
+After the Lambda function is installed you should not run `install` anymore but instead just run the
+`update` task to update the latest code to Lambda environment.
 
     $ lein lambda update test
 
@@ -80,7 +80,7 @@ or
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.5.0"
+[clj-lambda "0.5.1"]
 ```
 
 Then run
@@ -93,10 +93,10 @@ Then run
 (aws/install-lambda stage-name config jar-file opts)
 ```
 
-Config is a vector of configurations. See example from Leiningen plugin documentation above.
+where `config` is a vector of configuration options; see the example from the Leiningen plugin documentation above.
 
 ## License
 
-Copyright © 2016 Markus Hjort
+Copyright © 2016-2017 Markus Hjort
 
 Distributed under the Eclipse Public License 1.0.
