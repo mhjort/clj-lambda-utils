@@ -1,4 +1,4 @@
-(def project 'clj-lambda/clj-lambda)
+(def project 'boot-clj-lambda/boot-clj-lambda)
 
 (set-env! :dependencies '[[clj-lambda "0.5.0"]]
           :source-paths #{"src"})
