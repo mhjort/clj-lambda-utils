@@ -17,5 +17,5 @@
         (lambda-fn stage-name
                    (get lambda-config stage-name)
                    jar-file
-                   {:only-api-gateway only-api-gateway}))
+                   {:only-api-gateway (boolean only-api-gateway)}))
       (next-task fileset))))
