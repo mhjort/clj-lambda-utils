@@ -91,7 +91,7 @@ Put `[boot-clj-lambda "0.1.0"]` into your boot dependency vector.
               :only-api-gateway true))
 ```
 
-Where `lambda-config` is a map just like the example in the [Leiningen plug-in](#Leingingen plug-in) section above,
+Where `lambda-config` is a map just like the example in the [Leiningen plug-in](#leiningen-plugin) section above,
 keyed by `stage-name`.
 
 It is recommended to read in `lambda-config` from a file before passing it to the task CLI:
