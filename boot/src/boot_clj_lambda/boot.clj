@@ -6,7 +6,7 @@
 (deftask lambda
   [a action           ACTION  kw   "Action to perform: 'install' or 'update'"
    l lambda-config    CONFIG  edn  "Lambda configuration keyed by stage name"
-   s stage-name       STAGE   kw   "The environment to install"
+   s stage-name       STAGE   str  "The environment to install"
    j jar-file         JARFILE str  "Path to the jar file to upload"
    o only-api-gateway         bool "Only update API gateway option"]
   (fn [next-task]
