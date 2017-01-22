@@ -80,7 +80,7 @@ or
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.5.1"]
+[clj-lambda "0.5.2"]
 ```
 
 Then run
