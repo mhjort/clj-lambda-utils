@@ -1,6 +1,6 @@
 (def project 'boot-clj-lambda/boot-clj-lambda)
 
-(set-env! :dependencies '[[clj-lambda "0.5.1"]]
+(set-env! :dependencies '[[clj-lambda "0.5.2"]]
           :source-paths #{"src"})
 
 (deftask package

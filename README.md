@@ -96,7 +96,7 @@ keyed by `stage-name`.
 
 It is recommended to read in `lambda-config` from a file before passing it to the task CLI:
 
-    $ boot -a install :lambda-config $(< '/path/to/config.edn') ...
+    $ boot -a install :lambda-config "$(< /path/to/config.edn)" ...
 
 ### Library
 
