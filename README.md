@@ -75,6 +75,29 @@ or
 
     $ lein lambda update production
 
+### Boot task
+
+A single boot task `lambda` is provided.
+
+Put `[boot-clj-lambda "0.1.0"]` into your boot dependency vector.
+
+``` clojure
+(require '[boot-clj-lambda.boot :refer [lambda]])
+
+(boot (lambda :action           :update           ;; either :update or :install
+              :lambda-config    lambda-config
+              :stage-name       "test"
+              :jar-file         "/path/to/jar.jar"
+              :only-api-gateway true))
+```
+
+Where `lambda-config` is a map just like the example in the [Leiningen plug-in](#leiningen-plugin) section above,
+keyed by `stage-name`.
+
+It is recommended to read in `lambda-config` from a file before passing it to the task CLI:
+
+    $ boot -a install :lambda-config "$(< /path/to/config.edn)" ...
+
 ### Library
 
 Add the following to your `project.clj` `:dependencies`:
