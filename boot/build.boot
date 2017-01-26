@@ -1,7 +1,8 @@
 (def project 'boot-clj-lambda/boot-clj-lambda)
 
 (set-env! :dependencies '[[clj-lambda "0.5.2"]]
-          :source-paths #{"src"})
+          :source-paths #{"src"}
+          :repositories [["clojars" {:url "https://clojars.org/repo/"}]])
 
 (deftask package
   [v version VERSION str "The version number to package"]
