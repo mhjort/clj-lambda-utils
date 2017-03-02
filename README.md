@@ -6,7 +6,7 @@ Note! The name of the repo used to be ```lein-clj-lambda``` when it contained on
 
 ## Usage
 
-You can use utilities as a Leiningen plugin or just as a Clojure library. Boot support is coming up later!
+You can use utilities as a plugin for Leiningen or Boot (or just as Clojure library). 
 
 ### Leiningen plugin
 
