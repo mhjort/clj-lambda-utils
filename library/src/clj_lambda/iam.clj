@@ -1,6 +1,6 @@
 (ns clj-lambda.iam
   (:require [clojure.string :as string]
-            [cheshire.core :refer [generate-string]])
+            [clojure.data.json :as json])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.identitymanagement AmazonIdentityManagementClient]
            [com.amazonaws.services.identitymanagement.model AttachRolePolicyRequest
@@ -57,10 +57,10 @@
   (try
     (let [role (.createRole @iam-client (-> (CreateRoleRequest.)
                                             (.withRoleName role-name)
-                                            (.withAssumeRolePolicyDocument (generate-string (trust-policy trust-policy-service)))))
+                                            (.withAssumeRolePolicyDocument (json/write-str (trust-policy trust-policy-service)))))
           policy-result (.createPolicy @iam-client (-> (CreatePolicyRequest.)
                                                        (.withPolicyName policy-name)
-                                                       (.withPolicyDocument (generate-string policy))))]
+                                                       (.withPolicyDocument (json/write-str policy))))]
       (.attachRolePolicy @iam-client (-> (AttachRolePolicyRequest.)
                                          (.withPolicyArn (-> policy-result .getPolicy .getArn))
                                          (.withRoleName role-name)))
