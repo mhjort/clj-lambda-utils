@@ -5,7 +5,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/data.json "0.2.6"]
-                 [prismatic/schema "1.1.3"]
+                 [prismatic/schema "1.1.4"]
                  [com.amazonaws/aws-java-sdk-core ~aws-java-sdk-version
                    :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.amazonaws/aws-java-sdk-lambda ~aws-java-sdk-version]
