@@ -4,7 +4,8 @@
             [clj-lambda.schema :refer [OptionsSchema
                                        ConfigSchemaForUpdate
                                        ConfigSchemaForInstall]]
-            [schema.core :as s])
+            [schema.core :as s]
+            [robert.bruce :refer [try-try-again]])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
                                                 UpdateFunctionCodeRequest
@@ -109,8 +110,15 @@
         (store-jar-to-bucket (File. jar-file)
                              bucket
                              object-key)
-        (create-lambda-fn (-> env-settings
-                              (select-keys [:function-name :handler :timeout
-                                            :environment :memory-size :region])
-                              (assoc :role-arn role-arn :bucket bucket :object-key object-key))))
+        ; There seems to be a race condition in the Amazon API which can cause function creation
+        ; to fail if the role used has only recently been created. So retry until this succeeds.
+        ; See:
+        ;   https://stackoverflow.com/questions/36419442/the-role-defined-for-the-function-cannot-be-assumed-by-lambda
+        ;   https://stackoverflow.com/questions/37503075/invalidparametervalueexception-the-role-defined-for-the-function-cannot-be-assu
+        (try-try-again 
+          {:decay :exponential}
+          create-lambda-fn (-> env-settings
+                               (select-keys [:function-name :handler :timeout
+                                             :environment :memory-size :region])
+                               (assoc :role-arn role-arn :bucket bucket :object-key object-key))))
       (println "Skipping Lambda installation"))))
