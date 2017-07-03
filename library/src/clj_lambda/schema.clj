@@ -9,7 +9,7 @@
 (defn- environment-config [install?]
   {(s/optional-key :api-gateway) {:name String}
    :function-name String
-   :region String
+   (s/optional-key :region) String
    (define-key :handler install?) String
    (define-key :memory-size install?) s/Int
    (define-key :timeout install?) s/Int

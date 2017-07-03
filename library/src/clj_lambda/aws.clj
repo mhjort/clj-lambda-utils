@@ -6,6 +6,7 @@
                                        ConfigSchemaForInstall]]
             [schema.core :as s])
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
+           [com.amazonaws.regions DefaultAwsRegionProviderChain]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
                                                 UpdateFunctionCodeRequest
                                                 FunctionCode
@@ -17,6 +18,12 @@
 
 (def aws-credentials
   (.getCredentials (DefaultAWSCredentialsProviderChain.)))
+
+(def default-region
+  (.getRegion (DefaultAwsRegionProviderChain.)))
+
+(defn- determine-region [config]
+  (or (:region (first config)) default-region))
 
 (defonce s3-client
   (delay (AmazonS3Client. aws-credentials)))
@@ -81,7 +88,8 @@
 (defn update-lambda [stage-name config jar-file & [opts]]
   (validate-input ConfigSchemaForUpdate config (or opts {}))
   (println "Updating env" stage-name "with options" opts)
-  (let [[{:keys [region function-name s3]}] config
+  (let [[{:keys [function-name s3]}] config
+        region (determine-region config)
         {:keys [bucket object-key]} (deployment-s3-config s3 function-name)]
     (println "Deploying to region" region)
     (store-jar-to-bucket (File. jar-file)
@@ -92,8 +100,9 @@
 (defn install-lambda [stage-name config jar-file & [opts]]
   (validate-input ConfigSchemaForInstall config (or opts {}))
   (println "Installing env" stage-name "with options" opts)
-  (let [[{:keys [api-gateway region function-name environment
+  (let [[{:keys [api-gateway function-name environment
                  handler memory-size timeout s3 policy-statements] :as env-settings}] config
+        region (determine-region config)
         install-all? (not (:only-api-gateway opts))]
     (println "Installing with settings" env-settings)
     (when api-gateway
@@ -111,6 +120,9 @@
                              object-key)
         (create-lambda-fn (-> env-settings
                               (select-keys [:function-name :handler :timeout
-                                            :environment :memory-size :region])
-                              (assoc :role-arn role-arn :bucket bucket :object-key object-key))))
+                                            :environment :memory-size])
+                              (assoc :role-arn role-arn 
+                                     :bucket bucket 
+                                     :object-key object-key
+                                     :region region))))
       (println "Skipping Lambda installation"))))
