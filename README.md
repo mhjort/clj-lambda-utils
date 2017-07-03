@@ -12,7 +12,7 @@ Note! Uninstalling Lambda is not currently supported so you have to delete all r
 
 ### Leiningen plugin
 
-Put `[lein-clj-lambda "0.10.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.10.2"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -24,7 +24,7 @@ Create S3 bucket and create following configuration into `project.clj`
                   :function-name "my-func-test"
                   :environment {"MY_ENVIRONMENT_VAR" "some value" ;Optional
                                 "SOME_OTHER_ENV_VAR" "another val"}
-                  :region "eu-west-1"
+                  :region "eu-west-1" ; Optional, when not specified the default region specified in your AWS config will be used
                   :policy-statements [{:Effect "Allow"
                                        :Action ["sqs:*"]
                                        :Resource ["arn:aws:sqs:eu-west-1:*"]}]
@@ -37,7 +37,7 @@ Create S3 bucket and create following configuration into `project.clj`
                          :function-name "my-func-prod"
                          :environment {"MY_ENVIRONMENT_VAR" "some value"
                                        "SOME_OTHER_ENV_VAR" "another val"}
-                         :region "eu-west-1"
+                         :region "eu-west-1" ; Optional, when not specified the default region specified in your AWS config will be used
                          :s3 {:bucket "your-bucket"
                               :object-key "lambda.jar"}}]}
 ```
@@ -104,7 +104,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.6.0"]
+[clj-lambda "0.6.1"]
 ```
 
 Then run
