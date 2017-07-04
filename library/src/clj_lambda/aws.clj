@@ -129,8 +129,8 @@
           create-lambda-fn (-> env-settings
                                (select-keys [:function-name :handler :timeout
                                              :environment :memory-size])
-                               (assoc :role-arn role-arn 
-                                      :bucket bucket 
+                               (assoc :role-arn role-arn
+                                      :bucket bucket
                                       :object-key object-key
                                       :region region))))
       (println "Skipping Lambda installation"))))
