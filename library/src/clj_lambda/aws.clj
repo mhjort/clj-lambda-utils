@@ -124,8 +124,8 @@
         ; See:
         ;   https://stackoverflow.com/questions/36419442/the-role-defined-for-the-function-cannot-be-assumed-by-lambda
         ;   https://stackoverflow.com/questions/37503075/invalidparametervalueexception-the-role-defined-for-the-function-cannot-be-assu
-        (try-try-again 
-          {:decay :exponential}
+        (try-try-again
+          {:decay :exponential :sleep 1000 :tries 3}
           create-lambda-fn (-> env-settings
                                (select-keys [:function-name :handler :timeout
                                              :environment :memory-size])
