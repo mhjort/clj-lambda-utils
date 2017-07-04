@@ -2,41 +2,42 @@
 
 Clojure utilities for deploying AWS Lambda (JVM) function(s) to one or multiple regions via S3.
 
-Note! The name of the repo used to be ```lein-clj-lambda``` when it contained only the Leingingen plugin.
+Note! The name of the repo used to be ```lein-clj-lambda``` when it contained only the Leiningen plugin.
 
 ## Usage
 
-You can use utilities as a plugin for Leiningen or Boot (or just as Clojure library). 
-
-### Leiningen plugin
+You can use utilities as a plugin for Leiningen or Boot (or just as Clojure library).
 
 Note! Uninstalling Lambda is not currently supported so you have to delete all resources manually if you need to uninstall Lambda. When installing Lambda all created resource names are logged to console.
 
-Put `[lein-clj-lambda "0.10.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+### Leiningen plugin
+
+Put `[lein-clj-lambda "0.10.2"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
 ```clojure
-:lambda {"test" [{:api-gateway {:name "DemoApi"} ; Optional, if you want to access via API Gateway
+:lambda {"test" [{:api-gateway {:name "DemoApiTest"} ; Optional, if you want to access via API Gateway
                   :handler "lambda-demo.LambdaFn"
                   :memory-size 512
                   :timeout 60
                   :function-name "my-func-test"
                   :environment {"MY_ENVIRONMENT_VAR" "some value" ;Optional
                                 "SOME_OTHER_ENV_VAR" "another val"}
-                  :region "eu-west-1"
+                  :region "eu-west-1" ; Optional, when not specified the default region specified in your AWS config will be used
                   :policy-statements [{:Effect "Allow"
                                        :Action ["sqs:*"]
                                        :Resource ["arn:aws:sqs:eu-west-1:*"]}]
                   :s3 {:bucket "your-bucket"  ; Optional, if not specified default bucket will be generated
                        :object-key "lambda.jar"}}]
-          "production" [{:handler "lambda-demo.LambdaFn"
+          "production" [{:api-gateway {:name "DemoApiProduction"} ; Optional, if you want to access via API Gateway
+                         :handler "lambda-demo.LambdaFn"
                          :memory-size 1024
                          :timeout 300
                          :function-name "my-func-prod"
                          :environment {"MY_ENVIRONMENT_VAR" "some value"
                                        "SOME_OTHER_ENV_VAR" "another val"}
-                         :region "eu-west-1"
+                         :region "eu-west-1" ; Optional, when not specified the default region specified in your AWS config will be used
                          :s3 {:bucket "your-bucket"
                               :object-key "lambda.jar"}}]}
 ```
@@ -103,7 +104,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.6.0"]
+[clj-lambda "0.6.1"]
 ```
 
 Then run
