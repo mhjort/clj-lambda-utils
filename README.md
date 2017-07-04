@@ -12,7 +12,7 @@ Note! Uninstalling Lambda is not currently supported so you have to delete all r
 
 ### Leiningen plugin
 
-Put `[lein-clj-lambda "0.10.2"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.10.3"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -58,11 +58,6 @@ but they will be passed as JSON to AWS IAM (See here the details of policy
 statements http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement)
 If an S3 bucket or role already exists, its creation will be skipped.
 
-Note that IAM role and policy creation happen asynchronously. Sometimes they take too much
-time to create and they are not ready when a Lambda function is installing. In those cases
-you will get an error like `The role defined for the function cannot be assumed by Lambda.`
-Just retrying the install command should fix this issue.
-
 If the Lambda function already exists and you want to just configure API gateway for that you can run:
 
     $ lein lambda install test --only-api-gateway
@@ -104,7 +99,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.6.1"]
+[clj-lambda "0.6.2"]
 ```
 
 Then run
