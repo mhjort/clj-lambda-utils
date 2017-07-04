@@ -5,4 +5,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/data.json "0.2.6"]
                  [prismatic/schema "1.1.4"]
-                 [com.amazonaws/aws-java-sdk-bundle "1.11.112"]])
+                 [com.amazonaws/aws-java-sdk-bundle "1.11.112"]
+                 [robert/bruce "0.8.0"]])
