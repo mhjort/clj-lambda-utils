@@ -11,7 +11,8 @@
            [com.amazonaws.services.lambda.model CreateFunctionRequest
                                                 UpdateFunctionCodeRequest
                                                 FunctionCode
-                                                Environment]
+                                                Environment
+                                                VpcConfig]
            [com.amazonaws.services.lambda AWSLambdaClient]
            [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
@@ -50,10 +51,14 @@
 
 (defn create-lambda-fn [{:keys [function-name handler bucket
                                 object-key environment memory-size
-                                timeout region role-arn]}]
+                                timeout region role-arn vpc]}]
   (println "Creating Lambda function" function-name "to region" region)
   (let [client (create-lambda-client region)
-        env-vars (.withVariables (Environment.) environment)]
+        env-vars (.withVariables (Environment.) environment)
+        vpc-config (when-let [{:keys [security-group-ids subnet-ids]} vpc]
+                     (-> (VpcConfig.)
+                         (.withSecurityGroupIds security-group-ids)
+                         (.withSubnetIds subnet-ids)))]
     (.createFunction client (-> (CreateFunctionRequest.)
                                 (.withFunctionName function-name)
                                 (.withMemorySize (int memory-size))
@@ -64,7 +69,9 @@
                                                (.withS3Bucket bucket)
                                                (.withS3Key object-key)))
                                 (.withEnvironment env-vars)
-                                (.withRole role-arn)))))
+                                (.withRole role-arn)
+                                (cond-> vpc-config
+                                  (.withVpcConfig vpc-config))))))
 
 (defn update-lambda-fn [lambda-name bucket-name region object-key]
   (println "Updating Lambda function" lambda-name "in region" region)
@@ -128,7 +135,7 @@
           {:decay :exponential :sleep 1000 :tries 3}
           create-lambda-fn (-> env-settings
                                (select-keys [:function-name :handler :timeout
-                                             :environment :memory-size])
+                                             :environment :memory-size :vpc])
                                (assoc :role-arn role-arn
                                       :bucket bucket
                                       :object-key object-key
