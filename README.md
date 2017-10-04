@@ -29,7 +29,9 @@ Create S3 bucket and create following configuration into `project.clj`
                                        :Action ["sqs:*"]
                                        :Resource ["arn:aws:sqs:eu-west-1:*"]}]
                   :s3 {:bucket "your-bucket"  ; Optional, if not specified default bucket will be generated
-                       :object-key "lambda.jar"}}]
+                       :object-key "lambda.jar"}
+                  :vpc {:security-group-ids ["sg-xxxx"]
+                        :subnet-ids ["subnet-xxxxxx"]}}]
           "production" [{:api-gateway {:name "DemoApiProduction"} ; Optional, if you want to access via API Gateway
                          :handler "lambda-demo.LambdaFn"
                          :memory-size 1024
@@ -39,7 +41,9 @@ Create S3 bucket and create following configuration into `project.clj`
                                        "SOME_OTHER_ENV_VAR" "another val"}
                          :region "eu-west-1" ; Optional, when not specified the default region specified in your AWS config will be used
                          :s3 {:bucket "your-bucket"
-                              :object-key "lambda.jar"}}]}
+                              :object-key "lambda.jar"}
+                         :vpc {:security-group-ids ["sg-xxxx"]
+                               :subnet-ids ["subnet-xxxxxx"]}}]}
 ```
 
 Then run
