@@ -12,7 +12,7 @@ Note! Uninstalling Lambda is not currently supported so you have to delete all r
 
 ### Leiningen plugin
 
-Put `[lein-clj-lambda "0.10.3"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.11.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
@@ -79,7 +79,7 @@ or
 
 A single boot task `lambda` is provided.
 
-Put `[boot-clj-lambda "0.1.0"]` into your boot dependency vector.
+Put `[boot-clj-lambda "0.2.0"]` into your boot dependency vector.
 
 ``` clojure
 (require '[boot-clj-lambda.boot :refer [lambda]])
@@ -103,7 +103,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.6.2"]
+[clj-lambda "0.7.0"]
 ```
 
 Then run
