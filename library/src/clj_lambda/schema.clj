@@ -16,7 +16,9 @@
    (s/optional-key :environment) {String String}
    (s/optional-key :policy-statements) [{s/Keyword s/Any}]
    (s/optional-key :s3) {:bucket String
-                         :object-key String}})
+                         :object-key String}
+   (s/optional-key :vpc) {:security-group-ids [String]
+                          :subnet-ids [String]}})
 
 (def ConfigSchemaForInstall
   [(environment-config true)])
