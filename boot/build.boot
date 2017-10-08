@@ -1,6 +1,6 @@
 (def project 'boot-clj-lambda/boot-clj-lambda)
 
-(set-env! :dependencies '[[clj-lambda "0.5.2"]]
+(set-env! :dependencies '[[clj-lambda "0.7.0"]]
           :source-paths #{"src"}
           :repositories [["clojars" {:url "https://clojars.org/repo/"
                                      :username (System/getenv "CLOJARS_USER")
