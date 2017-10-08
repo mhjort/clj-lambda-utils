@@ -1,4 +1,4 @@
-(defproject clj-lambda "0.6.2"
+(defproject clj-lambda "0.7.0"
   :description "Clojure utilities for AWS Lambda deployment"
   :url "https://github.com/mhjort/lein-clj-lambda/library"
   :license {:name "Eclipse Public License"
