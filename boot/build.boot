@@ -2,7 +2,9 @@
 
 (set-env! :dependencies '[[clj-lambda "0.5.2"]]
           :source-paths #{"src"}
-          :repositories [["clojars" {:url "https://clojars.org/repo/"}]])
+          :repositories [["clojars" {:url "https://clojars.org/repo/"
+                                     :username (System/getenv "CLOJARS_USER")
+                                     :password (System/getenv "CLOJARS_PASS")}]])
 
 (deftask package
   [v version VERSION str "The version number to package"]
