@@ -71,3 +71,15 @@
                                     (.withRoleName role-name)))
           (.getRole)
           (.getArn)))))
+
+(defn delete-role-and-policy [role-name policy-name]
+  (println "Deleting role" role-name "with policy" policy-name)
+  (let [policy-arn (.getArn (first (filter #(= policy-name (.getPolicyName %))
+                                           (.getPolicies (.listPolicies @iam-client)))))]
+    (.detachRolePolicy @iam-client (-> (DetachRolePolicyRequest.)
+                                       (.withPolicyArn policy-arn)
+                                       (.withRoleName role-name)))
+    (.deletePolicy @iam-client (-> (DeletePolicyRequest.)
+                                   (.withPolicyArn policy-arn)))
+    (.deleteRole @iam-client (-> (DeleteRoleRequest.)
+                                 (.withRoleName role-name)))))
