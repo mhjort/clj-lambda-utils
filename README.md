@@ -12,7 +12,7 @@ Note! Uninstalling Lambda is not currently supported so you have to delete all r
 
 ### Leiningen plugin
 
-Put `[lein-clj-lambda "0.11.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.11.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
