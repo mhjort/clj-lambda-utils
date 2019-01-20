@@ -9,6 +9,7 @@
   (:import [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.regions DefaultAwsRegionProviderChain]
            [com.amazonaws.services.lambda.model CreateFunctionRequest
+                                                DeleteFunctionRequest
                                                 UpdateFunctionCodeRequest
                                                 FunctionCode
                                                 Environment
@@ -41,6 +42,18 @@
         (if (= "us-east-1" region)
           (.createBucket @s3-client bucket-name)
           (.createBucket @s3-client bucket-name region)))))
+
+(defn- delete-all-objects-from-bucket [bucket-name]
+  (println "Deleting all objects from bucket" bucket-name)
+  (let [object-keys (map #(.getKey %)
+                         (.getObjectSummaries (.listObjects @s3-client bucket-name)))]
+    (doseq [object-key object-keys]
+      (println "Deleting" object-key)
+      (.deleteObject @s3-client bucket-name object-key))))
+
+(defn- delete-bucket [bucket-name]
+  (println "Deleting bucket" bucket-name)
+  (.deleteBucket @s3-client bucket-name))
 
 (defn store-jar-to-bucket [^File jar-file bucket-name object-key]
   (println "Uploading code to S3 bucket" bucket-name "with name" object-key)
@@ -89,6 +102,12 @@
       (println "No S3 settings defined, using defaults" default-s3-config)
       default-s3-config)))
 
+(defn delete-lambda-fn [lambda-name region]
+  (println "Deleting Lambda function" lambda-name "from region" region)
+  (let [client (create-lambda-client region)]
+    (.deleteFunction client (-> (DeleteFunctionRequest.)
+                                (.withFunctionName lambda-name)))))
+
 (defn- validate-input [config-schema config opts]
   (s/validate config-schema config)
   (s/validate OptionsSchema opts))
@@ -132,7 +151,7 @@
         ;   https://stackoverflow.com/questions/36419442/the-role-defined-for-the-function-cannot-be-assumed-by-lambda
         ;   https://stackoverflow.com/questions/37503075/invalidparametervalueexception-the-role-defined-for-the-function-cannot-be-assu
         (try-try-again
-          {:decay :exponential :sleep 1000 :tries 3}
+          {:decay :exponential :sleep 1000 :tries 10}
           create-lambda-fn (-> env-settings
                                (select-keys [:function-name :handler :timeout
                                              :environment :memory-size :vpc])
@@ -141,3 +160,13 @@
                                       :object-key object-key
                                       :region region))))
       (println "Skipping Lambda installation"))))
+
+(defn uninstall-lambda [stage-name config & [opts]]
+  (let [[{:keys [function-name s3] :as env-settings}] config
+        region (determine-region config)
+        role (str function-name "-role")
+        policy (str function-name "-policy")]
+    (iam/delete-role-and-policy role policy)
+    (delete-all-objects-from-bucket (:bucket s3))
+    (delete-bucket (:bucket s3))
+    (delete-lambda-fn function-name region)))
