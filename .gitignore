@@ -5,7 +5,6 @@ library/target
 /checkouts
 pom.xml
 pom.xml.asc
-*.jar
 *.class
 /.lein-*
 /.nrepl-port
