@@ -107,7 +107,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.8.0"]
+[clj-lambda "0.8.1"]
 ```
 
 Then run
