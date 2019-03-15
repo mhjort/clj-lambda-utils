@@ -12,7 +12,7 @@ Note! When installing Lambda all created resource names are logged to console.
 
 ### Leiningen plugin
 
-Put `[lein-clj-lambda "0.12.0"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
+Put `[lein-clj-lambda "0.12.1"]` into the `:plugins` vector of your project.clj (or your profile if you prefer that).
 
 Create S3 bucket and create following configuration into `project.clj`
 
