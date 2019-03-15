@@ -107,7 +107,7 @@ It is recommended to read in `lambda-config` from a file before passing it to th
 Add the following to your `project.clj` `:dependencies`:
 
 ```clojure
-[clj-lambda "0.7.1"]
+[clj-lambda "0.8.0"]
 ```
 
 Then run
@@ -118,6 +118,8 @@ Then run
 (aws/update-lambda stage-name config jar-file opts)
 
 (aws/install-lambda stage-name config jar-file opts)
+
+(aws/uninstall-lambda stage-name config opts)
 ```
 
 where `config` is a vector of configuration options; see the example from the Leiningen plugin documentation above.
