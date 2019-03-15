@@ -165,8 +165,9 @@
   (let [[{:keys [function-name s3] :as env-settings}] config
         region (determine-region config)
         role (str function-name "-role")
-        policy (str function-name "-policy")]
+        policy (str function-name "-policy")
+        bucket (:bucket (deployment-s3-config s3 function-name))]
     (iam/delete-role-and-policy role policy)
-    (delete-all-objects-from-bucket (:bucket s3))
-    (delete-bucket (:bucket s3))
+    (delete-all-objects-from-bucket bucket)
+    (delete-bucket bucket)
     (delete-lambda-fn function-name region)))
